@@ -8,6 +8,18 @@ from torch.utils.data import DataLoader
 
 if __name__ == "__main__":
     '''
+        Conv part:
+        input(32x32x3) -> conv_1(3x3 32channels) -> max_pooling (16x16 32channels)
+        -> conv_2(3x3 64channels) -> max_pooling (8x8 64channels)
+        -> conv_2(3x3 64channels) -> max_pooling (4x4 64channels)
+        -> flatten (1024)
+        
+        MLP:
+        flattened vector -> Linear(1024->512) -> Linear(512->10)
+    '''
+    
+    
+    '''
         Initialize the neural network
     '''
     conv = Syn()
