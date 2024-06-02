@@ -6,6 +6,7 @@ Admit that this field has already become a huge separated field from machine lea
 - Model Parallelism
 - Tensor Parallelism
 - Zero Redundancy Optimizer (ZeRO)
+
 And some variants that aim to combine several different strategies.
 
 We only wants to briefly descibe two of them:
@@ -76,3 +77,10 @@ As mentioned above, the demo is mainly aimed to show the synthetic gradient work
   - Use CNNs as synthetic gradient generator
     - Without max_pooling
     - With resolution preserved paddings
+
+### Conclusion
+- Future of synthetic gradient
+  - Mention that due to the development of mordern model parallelism (especially the development of ZeRO) somehow fill the gaps between synthetic gradient.
+  - Mention that modern development of GPUs makes synthetic gradient not that essential these days
+  - RNNs are fading out due to the development of transformers
+  - Yes, at this time, synthetic gradient seems to have no future, but who knows.
