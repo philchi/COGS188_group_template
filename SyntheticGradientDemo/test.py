@@ -24,29 +24,29 @@ if __name__ == "__main__":
     '''
     conv = Syn()
 
-    conv.add_module('conv_1', nn.Conv2d(3, 32, kernel_size=3, padding=1))
-    conv.add_module('relu_1', nn.ReLU())
-    conv.add_module('maxpooling_1', nn.MaxPool2d(kernel_size=2, stride=2))
+    conv.add_module(name='conv_1', module=nn.Conv2d(3, 32, kernel_size=3, padding=1))
+    conv.add_module(name='relu_1', module=nn.ReLU())
+    conv.add_module(name='maxpooling_1', module=nn.MaxPool2d(kernel_size=2, stride=2))
 
-    conv.add_module('conv_2', nn.Conv2d(32, 64, kernel_size=3, padding=1))
-    conv.add_module('relu_2', nn.ReLU())
-    conv.add_module('maxpooling_2', nn.MaxPool2d(kernel_size=2, stride=2))
+    conv.add_module(name='conv_2', module=nn.Conv2d(32, 64, kernel_size=3, padding=1))
+    conv.add_module(name='relu_2', module=nn.ReLU())
+    conv.add_module(name='maxpooling_2', module=nn.MaxPool2d(kernel_size=2, stride=2))
 
-    conv.add_module('conv_3', nn.Conv2d(64, 64, kernel_size=3, padding=1))
-    conv.add_module('relu_3', nn.ReLU())
-    conv.add_module('maxpooling_3', nn.MaxPool2d(kernel_size=2, stride=2))
+    conv.add_module(name='conv_3', module=nn.Conv2d(64, 64, kernel_size=3, padding=1))
+    conv.add_module(name='relu_3', module=nn.ReLU())
+    conv.add_module(name='maxpooling_3', module=nn.MaxPool2d(kernel_size=2, stride=2))
 
-    conv.add_module('flatten', nn.Flatten())
+    conv.add_module(name='flatten', module=nn.Flatten())
 
     conv.enable_training(1024) # final output will be 64(C) * 4(H) * 4(W)
 
 
     dense = Reg()
 
-    dense.add_module('fc_1', nn.Linear(1024, 512))
-    dense.add_module('relu_1', nn.ReLU())
+    dense.add_module(name='fc_1', module=nn.Linear(1024, 512))
+    dense.add_module(name='relu_1', module=nn.ReLU())
 
-    dense.add_module('fc_2', nn.Linear(512, 10))
+    dense.add_module(name='fc_2', module=nn.Linear(512, 10))
 
     dense.enable_training()
 
@@ -58,6 +58,8 @@ if __name__ == "__main__":
     train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
     
+    test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
     
     '''
         Finalize preparation
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     '''
         Trainning process
     '''
-    for epoch in range(1,11):
+    for epoch in range(1,51):
         for data, target in train_loader:
             data, target = data.to(device), target.to(device)
             
@@ -78,4 +80,16 @@ if __name__ == "__main__":
             loss = dense.train_weight(conv_output, target)
             synthetic_grad_loss = conv.train_synthetic_grad(conv_output.grad)
         
-        print(f'Train Epoch: {epoch} \tLoss: {loss:.6f}\tSynthetic Loss: {synthetic_grad_loss:.6f}')
+        with torch.no_grad():
+            correct_num = 0
+            total_num = 0
+            for data, target in test_loader:
+                data, target = data.to(device), target.to(device)
+                conv_output = conv(data)
+                mlp_output = dense(conv_output)
+                result = torch.argmax(mlp_output, dim=-1)
+                print(result == target)
+                correct_num += torch.sum(result == target).item()
+                total_num += result.shape[0]
+                
+        print(f'Train Epoch: {epoch}\tLoss: {loss:.6f}\tSynthetic Loss: {synthetic_grad_loss:.6f}\tAccuracy: {correct_num/total_num}')
